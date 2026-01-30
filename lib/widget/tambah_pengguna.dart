@@ -6,6 +6,7 @@ class TambahPenggunaDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -16,10 +17,7 @@ class TambahPenggunaDialog extends StatelessWidget {
           children: [
             const Text(
               'Tambah Pengguna',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
@@ -34,19 +32,20 @@ class TambahPenggunaDialog extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // ===== BATAL =====
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                   child: const Text('Batal'),
                 ),
 
+                // ===== SIMPAN =====
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey.shade300,
@@ -56,13 +55,31 @@ class TambahPenggunaDialog extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    // nanti isi logic simpan
+                    // 🔑 SIMPAN CONTEXT ROOT
+                    final rootContext =
+                        Navigator.of(context, rootNavigator: true).context;
+
+                    // 1️⃣ Tutup dialog tambah pengguna
                     Navigator.pop(context);
+
+                    // 2️⃣ Tampilkan popup berhasil
+                    Future.microtask(() {
+                      showDialog(
+                        context: rootContext,
+                        barrierDismissible: false,
+                        builder: (_) => const SuccessDialog(),
+                      );
+
+                      // 3️⃣ Tutup otomatis
+                      Future.delayed(const Duration(milliseconds: 1500), () {
+                        Navigator.of(rootContext).pop();
+                      });
+                    });
                   },
                   child: const Text('Simpan'),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -74,13 +91,43 @@ class TambahPenggunaDialog extends StatelessWidget {
     bool obscure = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
         obscureText: obscure,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        ),
+      ),
+    );
+  }
+}
+
+// ================= POPUP BERHASIL =================
+class SuccessDialog extends StatelessWidget {
+  const SuccessDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: SizedBox(
+        height: 120,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.check_circle, color: Colors.green, size: 40),
+              SizedBox(height: 8),
+              Text(
+                'Berhasil',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
         ),
       ),

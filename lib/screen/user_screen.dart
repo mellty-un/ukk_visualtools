@@ -10,9 +10,24 @@ class UserScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFFB9D7A1),
         elevation: 0,
-        title: const Text(
-          'Pengguna',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+
+        // ===== TITLE CUSTOM =====
+        title: Row(
+          children: const [
+            Icon(
+              Icons.more_vert,
+              color: Colors.black,
+              size: 22,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Pengguna',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ],
         ),
       ),
       body: Padding(
@@ -36,22 +51,14 @@ class UserScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => const TambahPenggunaDialog(),
-                    );
-                  },
-                  child: Container(
-                    height: 45,
-                    width: 45,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFA8C98A),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.add, color: Colors.black),
+                Container(
+                  height: 45,
+                  width: 45,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFA8C98A),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  child: const Icon(Icons.add, color: Colors.black),
                 ),
               ],
             ),
@@ -74,11 +81,16 @@ class UserScreen extends StatelessWidget {
   }
 }
 
+// ================= CARD USER =================
 class UserCard extends StatelessWidget {
   final String name;
   final String role;
 
-  const UserCard({super.key, required this.name, required this.role});
+  const UserCard({
+    super.key,
+    required this.name,
+    required this.role,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -108,100 +120,26 @@ class UserCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(role, style: const TextStyle(fontSize: 12)),
+                Text(
+                  name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  role,
+                  style: const TextStyle(fontSize: 12),
+                ),
               ],
             ),
           ),
-          IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.delete_outline, size: 20), onPressed: () {}),
-        ],
-      ),
-    );
-  }
-}
-
-// ------------------- DIALOG TAMBAH PENGGUNA -------------------
-class TambahPenggunaDialog extends StatefulWidget {
-  const TambahPenggunaDialog({super.key});
-
-  @override
-  State<TambahPenggunaDialog> createState() => _TambahPenggunaDialogState();
-}
-
-class _TambahPenggunaDialogState extends State<TambahPenggunaDialog> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController roleController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Tambah Pengguna'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: nameController,
-            decoration: InputDecoration(
-              hintText: 'Nama',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+          IconButton(
+            icon: const Icon(Icons.edit, size: 20),
+            onPressed: () {},
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: roleController,
-            decoration: InputDecoration(
-              hintText: 'Role',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, size: 20),
+            onPressed: () {},
           ),
         ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Batal'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            // Tampilkan popup BERHASIL sebelum menutup dialog
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const SuccessDialog(),
-            );
-
-            // Tutup otomatis popup setelah 1.5 detik
-            Future.delayed(const Duration(milliseconds: 1500), () {
-              Navigator.of(context, rootNavigator: true).pop();
-            });
-
-            // Tutup dialog Tambah Pengguna
-            Navigator.pop(context);
-          },
-          child: const Text('Simpan'),
-        ),
-      ],
-    );
-  }
-}
-
-// ------------------- DIALOG BERHASIL -------------------
-class SuccessDialog extends StatelessWidget {
-  const SuccessDialog({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: SizedBox(
-        height: 120,
-        child: Center(
-          child: Text(
-            'Berhasil',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-        ),
       ),
     );
   }
