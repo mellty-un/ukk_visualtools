@@ -1,20 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:krpl/widget/alat_page.dart';
-import 'package:krpl/widget/tambah_pengguna.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'screen/splash_screen.dart';
 import 'screen/login_screen.dart';
-import 'screen/user_screen.dart';
+import 'screen/dashboard_screen.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Supabase.initialize(
-    url: 'https://vefbzsnlhbbwcwomvkbb.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZmJ6c25saGJid2N3b212a2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzMjc4NjIsImV4cCI6MjA4MzkwMzg2Mn0.QC1nP0NxbwTXLqf-YOBCjWCpDf-VJGQeX01uJ6QLTwQ',
-  );
-
+void main() {
   runApp(const MyApp());
 }
 
@@ -25,13 +14,31 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+      initialRoute: '/',
       routes: {
+        '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
-        '/users': (context) => const UserScreen(),
-        '/pengguna': (context) => const TambahPenggunaDialog(),
-        '/alat' : (context) => const AlatScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
+
+        // halaman dummy biar dashboard ga error
+        '/pengguna': (context) => const DummyPage(title: 'Pengguna'),
+        '/alat': (context) => const DummyPage(title: 'Alat'),
+        '/kategori': (context) => const DummyPage(title: 'Kategori'),
+        '/peminjaman': (context) => const DummyPage(title: 'Peminjaman'),
       },
+    );
+  }
+}
+
+class DummyPage extends StatelessWidget {
+  final String title;
+  const DummyPage({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(child: Text(title)),
     );
   }
 }
