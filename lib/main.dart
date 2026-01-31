@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
+
 import 'screen/splash_screen.dart';
 import 'screen/login_screen.dart';
-import 'screen/user_screen.dart';
+import 'screen/dashboard_screen.dart';
+import 'screen/user_page.dart';
+import 'widget/kategori_page.dart';
+import 'widget/alat_page.dart';
+import 'widget/peminjaman_page.dart'; 
+import 'widget/denda_page.dart';
 
-void main() {
+void main() async {
+  // 1. Pastikan widget binding sudah siap
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. Inisialisasi Supabase (WAJIB ADA AGAR TIDAK ERROR KONEKSI)
+  await Supabase.initialize(
+    url: 'https://vefbzsnlhbbwcwomvkbb.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZmJ6c25saGJid2N3b212a2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzMjc4NjIsImV4cCI6MjA4MzkwMzg2Mn0.QC1nP0NxbwTXLqf-YOBCjWCpDf-VJGQeX01uJ6QLTwQ',
+  );
+
   runApp(const MyApp());
 }
 
@@ -14,10 +30,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+      initialRoute: '/',
       routes: {
+        '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
-        '/users': (context) => const UserScreen(), // pastikan route ini sesuai dengan login screen
+        '/dashboard': (context) => const DashboardScreen(),
+
+        // MASTER
+        '/alat': (context) => const AlatScreen(),
+        '/pengguna': (context) => const UserPage(),
+        '/kategori': (context) => const KategoriPage(),
+        '/peminjaman': (context) => const PeminjamanPage(), 
       },
     );
   }

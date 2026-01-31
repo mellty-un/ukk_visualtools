@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 
-class TambahPenggunaDialog extends StatelessWidget {
-  const TambahPenggunaDialog({super.key});
+class EditPenggunaDialog extends StatelessWidget {
+  final String namaAwal;
+  final String roleAwal;
+  final String emailAwal;
+
+  const EditPenggunaDialog({
+    super.key,
+    required this.namaAwal,
+    required this.roleAwal,
+    required this.emailAwal,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final namaController = TextEditingController(text: namaAwal);
+    final roleController = TextEditingController(text: roleAwal);
+    final emailController = TextEditingController(text: emailAwal);
+    final passwordController = TextEditingController();
+
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
       shape: RoundedRectangleBorder(
@@ -16,16 +30,19 @@ class TambahPenggunaDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Tambah Pengguna',
+              'Edit Pengguna',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 20),
 
-            _inputField(label: 'Nama'),
-            _inputField(label: 'Role'),
-            _inputField(label: 'Email'),
-            _inputField(label: 'Kata sandi', obscure: true),
+            _inputField(label: 'Nama', controller: namaController),
+            _inputField(label: 'Role', controller: roleController),
+            _inputField(label: 'Email', controller: emailController),
+            _inputField(
+              label: 'Kata sandi',
+              controller: passwordController,
+              obscure: true,
+            ),
 
             const SizedBox(height: 25),
 
@@ -55,11 +72,11 @@ class TambahPenggunaDialog extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    // 🔑 SIMPAN CONTEXT ROOT
+                    // 🔑 SIMPAN ROOT CONTEXT
                     final rootContext =
                         Navigator.of(context, rootNavigator: true).context;
 
-                    // 1️⃣ Tutup dialog tambah pengguna
+                    // 1️⃣ Tutup dialog edit
                     Navigator.pop(context);
 
                     // 2️⃣ Tampilkan popup berhasil
@@ -67,7 +84,7 @@ class TambahPenggunaDialog extends StatelessWidget {
                       showDialog(
                         context: rootContext,
                         barrierDismissible: false,
-                        builder: (_) => const SuccessDialog(),
+                        builder: (_) => const EditSuccessDialog(),
                       );
 
                       // 3️⃣ Tutup otomatis
@@ -88,11 +105,13 @@ class TambahPenggunaDialog extends StatelessWidget {
 
   Widget _inputField({
     required String label,
+    required TextEditingController controller,
     bool obscure = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
+        controller: controller,
         obscureText: obscure,
         decoration: InputDecoration(
           labelText: label,
@@ -107,9 +126,9 @@ class TambahPenggunaDialog extends StatelessWidget {
   }
 }
 
-// ================= POPUP BERHASIL =================
-class SuccessDialog extends StatelessWidget {
-  const SuccessDialog({super.key});
+// ================= POPUP BERHASIL EDIT =================
+class EditSuccessDialog extends StatelessWidget {
+  const EditSuccessDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
