@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// import 'widget/aktivitas_screen.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -26,7 +27,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      /// ☰ DRAWER
+      /// DRAWER
       drawer: Drawer(
         backgroundColor: const Color(0xFFBFD9A8),
         child: SafeArea(
@@ -53,14 +54,12 @@ class _DashboardPageState extends State<DashboardPage> {
                       children: [
                         Text(
                           'Egi Dwi Saputri',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold),
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
                           'Admin',
                           style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic),
+                              fontSize: 12, fontStyle: FontStyle.italic),
                         ),
                       ],
                     )
@@ -78,15 +77,38 @@ class _DashboardPageState extends State<DashboardPage> {
                     return GestureDetector(
                       onTap: () {
                         setState(() => selectedIndex = i);
-
                         Navigator.pop(context);
 
-                        // CONTOH NAVIGASI
                         if (menus[i] == 'Pengguna') {
                           Navigator.pushNamed(context, '/pengguna');
                         }
+
                         if (menus[i] == 'Kategori') {
                           Navigator.pushNamed(context, '/kategori');
+                        }
+
+                        if (menus[i] == 'Alat') {
+                          Navigator.pushNamed(context, '/alat');
+                        }
+
+                        if (menus[i] == 'Denda' ||
+                            menus[i] == 'Riwayat') {
+                          Navigator.pushNamed(context, '/riwayat');
+                        }
+
+                        /// 🔥 AKTIVITAS → HALAMAN AKTIVITAS
+                        // if (menus[i] == 'Aktivitas') {
+                        //   Navigator.push(
+                        //     context,
+                        //     // MaterialPageRoute(
+                        //     //   // builder: (_) => const AktivitasPage(),
+                        //     // ),
+                        //   );
+                        // }
+
+                        if (menus[i] == 'Keluar') {
+                          Navigator.pushReplacementNamed(
+                              context, '/login');
                         }
                       },
                       child: Container(
@@ -141,11 +163,17 @@ class _DashboardPageState extends State<DashboardPage> {
                 _menuCard(
                   icon: Icons.work,
                   title: 'Alat',
+                  onTap: () {
+                    Navigator.pushNamed(context, '/alat');
+                  },
                 ),
                 const SizedBox(width: 12),
                 _menuCard(
                   icon: Icons.assignment,
                   title: 'Peminjam',
+                  onTap: () {
+                    Navigator.pushNamed(context, '/peminjaman');
+                  },
                 ),
               ],
             ),
@@ -168,28 +196,38 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   /// CARD MENU
-  Widget _menuCard({required IconData icon, required String title}) {
+  Widget _menuCard({
+    required IconData icon,
+    required String title,
+    VoidCallback? onTap,
+  }) {
     return Expanded(
-      child: Container(
-        height: 120,
-        decoration: BoxDecoration(
-          color: const Color(0xFFDDECCB),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: Colors.white),
-            const SizedBox(height: 8),
-            Text(title),
-          ],
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: const Color(0xFFDDECCB),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 40, color: Colors.white),
+              const SizedBox(height: 8),
+              Text(title),
+            ],
+          ),
         ),
       ),
     );
   }
 
   /// RIWAYAT ITEM
-  Widget _riwayatItem({required String title, required String name}) {
+  Widget _riwayatItem({
+    required String title,
+    required String name,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -207,9 +245,11 @@ class _DashboardPageState extends State<DashboardPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold)),
+                Text(name,
                     style:
-                        const TextStyle(fontWeight: FontWeight.bold)),
-                Text(name, style: const TextStyle(fontSize: 12)),
+                        const TextStyle(fontSize: 12)),
               ],
             ),
           ),
