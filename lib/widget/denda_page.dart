@@ -42,7 +42,7 @@ class _DendaScreenState extends State<DendaScreen> {
   List<Map<String, dynamic>> get filteredList {
     if (searchController.text.isEmpty) return dendaList;
     return dendaList
-        .where((item) => item['jenis_denda']
+        .where((item) => (item['jenis_denda'] ?? '')
             .toString()
             .toLowerCase()
             .contains(searchController.text.toLowerCase()))
@@ -73,21 +73,33 @@ class _DendaScreenState extends State<DendaScreen> {
                 style:
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               TextField(
                 controller: idPengembaC,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'ID Pengembalian'),
+                decoration: const InputDecoration(
+                  labelText: 'ID Pengembalian',
+                  border: OutlineInputBorder(),
+                ),
               ),
+              const SizedBox(height: 12),
               TextField(
                 controller: jenisC,
-                decoration: const InputDecoration(labelText: 'Jenis Denda'),
+                decoration: const InputDecoration(
+                  labelText: 'Jenis Denda',
+                  border: OutlineInputBorder(),
+                ),
               ),
+              const SizedBox(height: 12),
               TextField(
                 controller: totalC,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Total Denda'),
+                decoration: const InputDecoration(
+                  labelText: 'Total Denda (Rp)',
+                  border: OutlineInputBorder(),
+                ),
               ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: status,
                 items: const [
@@ -95,10 +107,15 @@ class _DendaScreenState extends State<DendaScreen> {
                       value: 'belum_bayar', child: Text('Belum Bayar')),
                   DropdownMenuItem(value: 'lunas', child: Text('Lunas')),
                 ],
-                onChanged: (v) => status = v!,
-                decoration: const InputDecoration(labelText: 'Status Bayar'),
+                onChanged: (v) {
+                  setState(() => status = v!);
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Status Bayar',
+                  border: OutlineInputBorder(),
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -112,7 +129,7 @@ class _DendaScreenState extends State<DendaScreen> {
                     onPressed: () async {
                       final payload = {
                         'id_pengembalian': int.tryParse(idPengembaC.text),
-                        'jenis_denda': jenisC.text,
+                        'jenis_denda': jenisC.text.trim(),
                         'total_denda': int.tryParse(totalC.text) ?? 0,
                         'status_bayar': status,
                       };
@@ -148,9 +165,36 @@ class _DendaScreenState extends State<DendaScreen> {
 
   // ================= DELETE =================
   Future<void> deleteDenda(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Hapus Denda'),
+        content: const Text('Yakin ingin menghapus denda ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
     try {
       await dendaService.deleteDenda(id);
       fetchDenda();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Denda berhasil dihapus'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -165,105 +209,118 @@ class _DendaScreenState extends State<DendaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFB9D7A1),
-      body: SafeArea(
+      backgroundColor: Colors.white, // full putih seperti halaman lain
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFBFD9A8),
+        elevation: 0,
+        title: const Text(
+          'Denda',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Row(
-                children: const [
-                  Icon(Icons.more_vert, color: Colors.black),
-                  SizedBox(width: 8),
-                  Text(
-                    'Denda',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22,
+            // Search + Tombol Tambah (dipisah)
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: searchController,
+                      onChanged: (_) => setState(() {}),
+                      decoration: const InputDecoration(
+                        hintText: 'Cari jenis denda...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // SEARCH + ADD
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE9E9E9),
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              child: TextField(
-                                controller: searchController,
-                                onChanged: (_) => setState(() {}),
-                                decoration: const InputDecoration(
-                                  hintText: 'Cari jenis denda...',
-                                  prefixIcon: Icon(Icons.search),
-                                  border: InputBorder.none,
-                                  contentPadding:
-                                      EdgeInsets.symmetric(vertical: 12),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: () => openForm(),
-                            child: Container(
-                              height: 50,
-                              width: 50,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFA8C98A),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.add,
-                                  color: Colors.white, size: 30),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Daftar Denda',
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      // LIST
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: filteredList.length,
-                          itemBuilder: (context, index) {
-                            final item = filteredList[index];
-                            return buildCard(
-                              item,
-                              onEdit: () => openForm(data: item),
-                              onDelete: () => deleteDenda(item['id_denda']),
-                            );
-                          },
-                        ),
+                const SizedBox(width: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6FAF6B),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
+                  child: IconButton(
+                    icon: const Icon(Icons.add, color: Colors.white, size: 28),
+                    padding: const EdgeInsets.all(12),
+                    constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
+                    onPressed: () => openForm(),
+                  ),
                 ),
-              ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // List atau pesan kosong
+            Expanded(
+              child: dendaList.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.money_off_csred_outlined,
+                            size: 80,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Belum ada data denda',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Tambahkan denda baru dengan tombol + di atas',
+                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: filteredList.length,
+                      itemBuilder: (context, index) {
+                        final item = filteredList[index];
+                        return buildCard(
+                          item,
+                          onEdit: () => openForm(data: item),
+                          onDelete: () => deleteDenda(item['id_denda']),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -278,17 +335,23 @@ class _DendaScreenState extends State<DendaScreen> {
     required VoidCallback onDelete,
   }) {
     final status = data['status_bayar'].toString().toLowerCase();
-    Color warna = status.contains('lunas')
+    final warna = status.contains('lunas')
         ? const Color(0xFFA5D6A7)
         : const Color(0xFFFFAB91);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,33 +362,41 @@ class _DendaScreenState extends State<DendaScreen> {
                 child: Text(
                   data['jenis_denda'] ?? "-",
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-              IconButton(onPressed: onEdit, icon: const Icon(Icons.edit, size: 20)),
-              IconButton(onPressed: onDelete, icon: const Icon(Icons.delete, size: 20)),
+              IconButton(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined, color: Colors.black),
+                tooltip: 'Edit',
+              ),
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete_outline, color: Colors.black),
+                tooltip: 'Hapus',
+              ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             "Total: Rp ${data['total_denda'] ?? 0}",
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Align(
             alignment: Alignment.bottomRight,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
                 color: warna,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.black45, width: 0.5),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 data['status_bayar'] ?? "-",
                 style: const TextStyle(
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),

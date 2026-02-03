@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'widget/aktivitas_screen.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -16,7 +15,7 @@ class _DashboardPageState extends State<DashboardPage> {
     'Pengguna',
     'Alat',
     'Denda',
-    'Riwayat',
+    'Peminjaman',
     'Kategori',
     'Aktivitas',
     'Keluar',
@@ -27,13 +26,13 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      /// DRAWER
+      /// DRAWER / Sidebar
       drawer: Drawer(
         backgroundColor: const Color(0xFFBFD9A8),
         child: SafeArea(
           child: Column(
             children: [
-              /// PROFILE
+              /// Profile section
               Container(
                 margin: const EdgeInsets.all(12),
                 padding: const EdgeInsets.all(12),
@@ -59,7 +58,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         Text(
                           'Admin',
                           style: TextStyle(
-                              fontSize: 12, fontStyle: FontStyle.italic),
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ],
                     )
@@ -67,7 +68,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
 
-              /// MENU LIST
+              /// Menu list
               Expanded(
                 child: ListView.builder(
                   itemCount: menus.length,
@@ -79,43 +80,41 @@ class _DashboardPageState extends State<DashboardPage> {
                         setState(() => selectedIndex = i);
                         Navigator.pop(context);
 
-                        if (menus[i] == 'Pengguna') {
-                          Navigator.pushNamed(context, '/pengguna');
-                        }
-
-                        if (menus[i] == 'Kategori') {
-                          Navigator.pushNamed(context, '/kategori');
-                        }
-
-                        if (menus[i] == 'Alat') {
-                          Navigator.pushNamed(context, '/alat');
-                        }
-
-                        if (menus[i] == 'Denda' ||
-                            menus[i] == 'Riwayat') {
-                          Navigator.pushNamed(context, '/riwayat');
-                        }
-
-                        /// 🔥 AKTIVITAS → HALAMAN AKTIVITAS
-                        // if (menus[i] == 'Aktivitas') {
-                        //   Navigator.push(
-                        //     context,
-                        //     // MaterialPageRoute(
-                        //     //   // builder: (_) => const AktivitasPage(),
-                        //     // ),
-                        //   );
-                        // }
-
-                        if (menus[i] == 'Keluar') {
-                          Navigator.pushReplacementNamed(
-                              context, '/login');
+                        switch (menus[i]) {
+                          case 'Pengguna':
+                            Navigator.pushNamed(context, '/pengguna');
+                            break;
+                          case 'Alat':
+                            Navigator.pushNamed(context, '/alat');
+                            break;
+                          case 'Kategori':
+                            Navigator.pushNamed(context, '/kategori');
+                            break;
+                          case 'Peminjam':
+                          case 'Peminjaman':
+                            Navigator.pushNamed(context, '/peminjaman');
+                            break;
+                          case 'Denda':
+                          case 'Riwayat':
+                            Navigator.pushNamed(context, '/riwayat');
+                            break;
+                          case 'Keluar':
+                            Navigator.pushReplacementNamed(context, '/login');
+                            break;
+                          // Tambahkan case 'Aktivitas' nanti jika sudah ada halamannya
+                          default:
+                            break;
                         }
                       },
                       child: Container(
                         margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 6),
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: active
                               ? const Color(0xFF6FAF6B)
@@ -125,9 +124,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: Text(
                           menus[i],
                           style: TextStyle(
-                            color: active
-                                ? Colors.white
-                                : Colors.black,
+                            color: active ? Colors.white : Colors.black,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -141,7 +138,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ),
 
-      /// APPBAR
+      /// AppBar
       appBar: AppBar(
         backgroundColor: const Color(0xFFBFD9A8),
         elevation: 0,
@@ -152,42 +149,84 @@ class _DashboardPageState extends State<DashboardPage> {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
 
-      /// BODY
+      /// Body
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// GRID MENU ATAS
+            /// Grid 2×2: Pengguna - Alat - Kategori - Peminjam
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _menuCard(
-                  icon: Icons.work,
-                  title: 'Alat',
-                  onTap: () {
-                    Navigator.pushNamed(context, '/alat');
-                  },
+                  icon: Icons.person,
+                  title: 'Pengguna',
+                  color: const Color(0xFFDDECCB),
+                  onTap: () => Navigator.pushNamed(context, '/pengguna'),
                 ),
                 const SizedBox(width: 12),
                 _menuCard(
-                  icon: Icons.assignment,
+                  icon: Icons.work,
+                  title: 'Alat',
+                  color: const Color(0xFFDDECCB),
+                  onTap: () => Navigator.pushNamed(context, '/alat'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _menuCard(
+                  icon: Icons.category,
+                  title: 'Kategori',
+                  color: const Color(0xFFDDECCB),
+                  onTap: () => Navigator.pushNamed(context, '/kategori'),
+                ),
+                const SizedBox(width: 12),
+                _menuCard(
+                  icon: Icons.people,
                   title: 'Peminjam',
-                  onTap: () {
-                    Navigator.pushNamed(context, '/peminjaman');
-                  },
+                  color: const Color(0xFFDDECCB),
+                  onTap: () => Navigator.pushNamed(context, '/peminjaman'),
                 ),
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            /// RIWAYAT CONTOH
-            _riwayatItem(
-              title: 'Meminjam gimbal',
-              name: 'Clarissa Aurelia',
+            /// Bagian Aktivitas / Riwayat Terbaru
+            const Text(
+              'Aktivitas Terbaru',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            _riwayatItem(
+            const SizedBox(height: 12),
+
+            _activityItem(
+              icon: Icons.schedule,
+              title: 'Meminjam kamera',
+              name: 'Chella Robiatul',
+              date: '26/01/2026',
+              total: 'total 3jam',
+            ),
+            _activityItem(
+              icon: Icons.schedule,
+              title: 'Meminjam Gimbal',
+              name: 'Clarissa Aurelia',
+              date: '26/01/2026',
+              total: 'total 3jam',
+            ),
+            _activityItem(
+              icon: Icons.check_circle,
               title: 'Mengembalikan kamera',
               name: 'Melati Tiara',
+              date: '26/01/2026',
+              total: 'total 3',
+              isReturn: true,
             ),
           ],
         ),
@@ -195,19 +234,19 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  /// CARD MENU
   Widget _menuCard({
     required IconData icon,
     required String title,
+    required Color color,
     VoidCallback? onTap,
   }) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 120,
+          height: 110,
           decoration: BoxDecoration(
-            color: const Color(0xFFDDECCB),
+            color: color,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
@@ -215,7 +254,13 @@ class _DashboardPageState extends State<DashboardPage> {
             children: [
               Icon(icon, size: 40, color: Colors.white),
               const SizedBox(height: 8),
-              Text(title),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
@@ -223,10 +268,13 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  /// RIWAYAT ITEM
-  Widget _riwayatItem({
+  Widget _activityItem({
+    required IconData icon,
     required String title,
     required String name,
+    required String date,
+    required String total,
+    bool isReturn = false,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -237,26 +285,39 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.check_circle,
-              color: Color(0xFF6FAF6B)),
-          const SizedBox(width: 10),
+          Icon(
+            icon,
+            color: isReturn ? const Color(0xFF6FAF6B) : Colors.orange,
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold)),
-                Text(name,
-                    style:
-                        const TextStyle(fontSize: 12)),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  name,
+                  style: const TextStyle(fontSize: 13),
+                ),
               ],
             ),
           ),
-          const Text(
-            '26/01/2026',
-            style: TextStyle(fontSize: 11),
-          )
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                total,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              Text(
+                date,
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+            ],
+          ),
         ],
       ),
     );
