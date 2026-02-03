@@ -1,6 +1,7 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../widget/tambah_kategori.dart';
+import '../widget/edit_kategori.dart';
 
 class KategoriPage extends StatefulWidget {
   const KategoriPage({super.key});
@@ -11,246 +12,214 @@ class KategoriPage extends StatefulWidget {
 
 class _KategoriPageState extends State<KategoriPage> {
   final supabase = Supabase.instance.client;
-  final TextEditingController _namaController = TextEditingController();
+  String search = '';
 
-  /// ================= GET DATA =================
-  Future<List<dynamic>> fetchKategori() async {
-    final data = await supabase
-        .from('kategori')
-        .select()
-        .order('id', ascending: false);
+  Future<List<Map<String, dynamic>>> fetchKategori() async {
+    final data = search.isEmpty
+        ? await supabase
+            .from('kategori')
+            .select()
+            .order('id_kategori', ascending: false)
+        : await supabase
+            .from('kategori')
+            .select()
+            .ilike('nama_kategori', '%$search%')
+            .order('id_kategori', ascending: false);
 
-    return data;
+    return List<Map<String, dynamic>>.from(data);
   }
 
-  /// ================= TAMBAH =================
-  Future<void> tambahKategori() async {
-    if (_namaController.text.trim().isEmpty) return;
-
-    await supabase.from('kategori').insert({
-      'nama': _namaController.text.trim(),
-    });
-
-    _namaController.clear();
-    Navigator.pop(context);
-    setState(() {});
-    _popupBerhasil('Kategori berhasil ditambahkan');
-  }
-
-  /// ================= EDIT =================
-  Future<void> editKategori(int id) async {
-    if (_namaController.text.trim().isEmpty) return;
-
+  Future<void> hapusKategori(int id) async {
     await supabase
         .from('kategori')
-        .update({'nama': _namaController.text.trim()})
-        .eq('id', id);
+        .delete()
+        .eq('id_kategori', id);
 
-    _namaController.clear();
-    Navigator.pop(context);
     setState(() {});
-    _popupBerhasil('Kategori berhasil diubah');
   }
 
-  /// ================= HAPUS =================
-  Future<void> hapusKategori(int id) async {
-    await supabase.from('kategori').delete().eq('id', id);
-    Navigator.pop(context);
-    setState(() {});
-    _popupBerhasil('Kategori berhasil dihapus');
-  }
-
-  /// ================= POPUP =================
-  void _popupBerhasil(String text) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) {
-        Timer(const Duration(seconds: 1), () => Navigator.pop(context));
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 40),
-                const SizedBox(height: 10),
-                Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// ================= FORM DIALOG =================
-  void _formDialog({
-    required String title,
-    required VoidCallback onSave,
-  }) {
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18)),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _namaController,
-                decoration: InputDecoration(
-                  hintText: 'nama :',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 25),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                    ),
-                    onPressed: () {
-                      _namaController.clear();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Batal'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey.shade400,
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: onSave,
-                    child: const Text('Simpan'),
-                  ),
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFB8D8A0),
       body: SafeArea(
         child: Column(
           children: [
-            // HEADER
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFFB8D8A0),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-              ),
+            const Padding(
+              padding: EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Expanded(
-                    child: Text(
-                      "Kategori",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
+                  Icon(Icons.more_vert),
+                  SizedBox(width: 8),
+                  Text(
+                    'Kategori',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      _namaController.clear();
-                      _formDialog(
-                        title: 'Tambah Kategori',
-                        onSave: tambahKategori,
-                      );
-                    },
-                  )
                 ],
               ),
             ),
 
-            /// LIST
             Expanded(
-              child: FutureBuilder<List<dynamic>>(
-                future: fetchKategori(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(
-                        child: CircularProgressIndicator());
-                  }
-
-                  final data = snapshot.data!;
-
-                  if (data.isEmpty) {
-                    return const Center(child: Text('Data kosong'));
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: data.length,
-                    itemBuilder: (context, index) {
-                      final item = data[index];
-
-                      final int id = item['id'];
-                      final String nama =
-                          item['nama']?.toString() ?? '-';
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border:
-                              Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                nama,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(30)),
+                ),
+                child: Column(
+                  children: [
+                    /// SEARCH + PLUS
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              onChanged: (v) =>
+                                  setState(() => search = v),
+                              decoration: InputDecoration(
+                                hintText: 'Cari...',
+                                prefixIcon: const Icon(Icons.search),
+                                filled: true,
+                                fillColor: Colors.grey.shade200,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                  borderSide: BorderSide.none,
+                                ),
                               ),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined),
-                              onPressed: () {
-                                _namaController.text = nama;
-                                _formDialog(
-                                  title: 'Edit Kategori',
-                                  onSave: () => editKategori(id),
-                                );
-                              },
+                          ),
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () async {
+                              final result = await showDialog(
+                                context: context,
+                                builder: (_) =>
+                                    const TambahKategoriDialog(),
+                              );
+                              if (result == true) setState(() {});
+                            },
+                            child: Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6FAF6B),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.add,
+                                  color: Colors.white),
                             ),
-                            IconButton(
-                              icon:
-                                  const Icon(Icons.delete_outline),
-                              onPressed: () => hapusKategori(id),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
+                          )
+                        ],
+                      ),
+                    ),
+
+                    /// LIST
+                    Expanded(
+                      child: FutureBuilder<List<Map<String, dynamic>>>(
+                        future: fetchKategori(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+
+                          final data = snapshot.data!;
+                          if (data.isEmpty) {
+                            return const Center(
+                                child: Text('Tidak ada kategori'));
+                          }
+
+                          return ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20),
+                            itemCount: data.length,
+                            itemBuilder: (context, i) {
+                              final item = data[i];
+                              return Container(
+                                margin:
+                                    const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.circular(18),
+                                  border: Border.all(
+                                      color: const Color(0xFFB8D8A0)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item['nama_kategori'],
+                                            style: const TextStyle(
+                                                fontWeight:
+                                                    FontWeight.bold),
+                                          ),
+                                          if (item['keterangan'] !=
+                                              null)
+                                            Text(
+                                              item['keterangan'],
+                                              style: const TextStyle(
+                                                  fontSize: 12),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    /// EDIT
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        size: 18,
+                                        color: Colors.black,
+                                      ),
+                                      onPressed: () async {
+                                        final result =
+                                            await showDialog(
+                                          context: context,
+                                          builder: (_) =>
+                                              EditKategoriDialog(
+                                            id: item['id_kategori'],
+                                            nama:
+                                                item['nama_kategori'],
+                                            keterangan:
+                                                item['keterangan'] ??
+                                                    '',
+                                          ),
+                                        );
+                                        if (result == true) {
+                                          setState(() {});
+                                        }
+                                      },
+                                    ),
+
+                                    /// DELETE
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        size: 18,
+                                        color: Colors.black,
+                                      ),
+                                      onPressed: () =>
+                                          hapusKategori(
+                                              item['id_kategori']),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
+            )
           ],
         ),
       ),

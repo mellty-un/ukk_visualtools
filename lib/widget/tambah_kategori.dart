@@ -1,68 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class TambahKategoriWidget extends StatefulWidget {
-  const TambahKategoriWidget({super.key});
+class TambahKategoriDialog extends StatefulWidget {
+  const TambahKategoriDialog({super.key});
 
   @override
-  State<TambahKategoriWidget> createState() => _TambahKategoriWidgetState();
+  State<TambahKategoriDialog> createState() =>
+      _TambahKategoriDialogState();
 }
 
-class _TambahKategoriWidgetState extends State<TambahKategoriWidget> {
-  final _namaC = TextEditingController();
-  bool loading = false;
+class _TambahKategoriDialogState
+    extends State<TambahKategoriDialog> {
+  final supabase = Supabase.instance.client;
+  final namaC = TextEditingController();
+  final ketC = TextEditingController();
 
   Future<void> simpan() async {
-    setState(() => loading = true);
+    if (namaC.text.trim().isEmpty) return;
 
-    await Supabase.instance.client.from('kategori').insert({
-      'nama': _namaC.text,
+    await supabase.from('kategori').insert({
+      'nama_kategori': namaC.text.trim(),
+      'keterangan': ketC.text.trim(),
     });
 
-    Navigator.pop(context);
+    Navigator.pop(context, true);
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Tambah Kategori',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'Tambah alat',
+              style:
+                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 20),
 
             TextField(
-              controller: _namaC,
+              controller: namaC,
               decoration: InputDecoration(
-                hintText: 'Nama kategori',
+                hintText: 'nama :',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
             ),
+            const SizedBox(height: 10),
 
+            TextField(
+              controller: ketC,
+              decoration: InputDecoration(
+                hintText: 'keterangan :',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
 
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
+                  child: const Text('Batal',
+                      style: TextStyle(color: Colors.white)),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  onPressed: loading ? null : simpan,
-                  child: loading
-                      ? const CircularProgressIndicator()
-                      : const Text('Simpan'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
+                  ),
+                  onPressed: simpan,
+                  child: const Text('Simpan',
+                      style: TextStyle(color: Colors.white)),
                 ),
               ],
             )

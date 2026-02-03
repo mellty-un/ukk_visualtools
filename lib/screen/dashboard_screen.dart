@@ -1,80 +1,165 @@
 import 'package:flutter/material.dart';
 
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  int selectedIndex = 0;
+
+  final List<String> menus = [
+    'Dashboard',
+    'Pengguna',
+    'Alat',
+    'Denda',
+    'Riwayat',
+    'Kategori',
+    'Aktivitas',
+    'Keluar',
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFB9D7A1),
-        title: const Text('Dashboard'),
+      backgroundColor: Colors.white,
+
+      /// ☰ DRAWER
+      drawer: Drawer(
+        backgroundColor: const Color(0xFFBFD9A8),
+        child: SafeArea(
+          child: Column(
+            children: [
+              /// PROFILE
+              Container(
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDDECCB),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: const [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Color(0xFF6FAF6B),
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Egi Dwi Saputri',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Admin',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+
+              /// MENU LIST
+              Expanded(
+                child: ListView.builder(
+                  itemCount: menus.length,
+                  itemBuilder: (context, i) {
+                    final active = selectedIndex == i;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => selectedIndex = i);
+
+                        Navigator.pop(context);
+
+                        // CONTOH NAVIGASI
+                        if (menus[i] == 'Pengguna') {
+                          Navigator.pushNamed(context, '/pengguna');
+                        }
+                        if (menus[i] == 'Kategori') {
+                          Navigator.pushNamed(context, '/kategori');
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: active
+                              ? const Color(0xFF6FAF6B)
+                              : const Color(0xFF8FB57A),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          menus[i],
+                          style: TextStyle(
+                            color: active
+                                ? Colors.white
+                                : Colors.black,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
+
+      /// APPBAR
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFBFD9A8),
+        elevation: 0,
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(color: Colors.black),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+
+      /// BODY
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ===== GRID MENU =====
-            GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+            /// GRID MENU ATAS
+            Row(
               children: [
-                dashboardCard(
-                  context,
-                  icon: Icons.people,
-                  title: 'Pengguna',
-                  route: '/pengguna',
-                ),
-                dashboardCard(
-                  context,
+                _menuCard(
                   icon: Icons.work,
                   title: 'Alat',
-                  route: '/alat',
                 ),
-                dashboardCard(
-                  context,
-                  icon: Icons.category,
-                  title: 'Kategori',
-                  route: '/kategori',
-                ),
-                dashboardCard(
-                  context,
+                const SizedBox(width: 12),
+                _menuCard(
                   icon: Icons.assignment,
-                  title: 'Peminjaman',
-                  route: '/peminjaman',
+                  title: 'Peminjam',
                 ),
               ],
             ),
 
             const SizedBox(height: 20),
 
-            // ===== LIST AKTIVITAS =====
-            Expanded(
-              child: ListView(
-                children: const [
-                  ActivityCard(
-                    title: 'Meminjam kamera',
-                    name: 'Chella Robiatul',
-                    total: 'total 3',
-                    date: '26/01/2026',
-                  ),
-                  ActivityCard(
-                    title: 'Meminjam Gimbal',
-                    name: 'Clarissa Aurelia',
-                    total: 'total 3',
-                    date: '26/01/2026',
-                  ),
-                  ActivityCard(
-                    title: 'Mengembalikan kamera',
-                    name: 'Melati Tiara',
-                    total: 'total 3',
-                    date: '26/01/2026',
-                  ),
-                ],
-              ),
+            /// RIWAYAT CONTOH
+            _riwayatItem(
+              title: 'Meminjam gimbal',
+              name: 'Clarissa Aurelia',
+            ),
+            _riwayatItem(
+              title: 'Mengembalikan kamera',
+              name: 'Melati Tiara',
             ),
           ],
         ),
@@ -82,133 +167,56 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  // ===== CARD MENU ATAS =====
-  Widget dashboardCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String route,
-  }) {
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, route),
+  /// CARD MENU
+  Widget _menuCard({required IconData icon, required String title}) {
+    return Expanded(
       child: Container(
+        height: 120,
         decoration: BoxDecoration(
-          color: const Color(0xFFB9D7A1),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: Offset(0, 4),
-            )
-          ],
+          color: const Color(0xFFDDECCB),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: Colors.white),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            )
+            Icon(icon, size: 40, color: Colors.white),
+            const SizedBox(height: 8),
+            Text(title),
           ],
         ),
       ),
     );
   }
-}
 
-// ===== CARD AKTIVITAS BAWAH =====
-class ActivityCard extends StatelessWidget {
-  final String title;
-  final String name;
-  final String total;
-  final String date;
-
-  const ActivityCard({
-    super.key,
-    required this.title,
-    required this.name,
-    required this.total,
-    required this.date,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  /// RIWAYAT ITEM
+  Widget _riwayatItem({required String title, required String name}) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFB9D7A1)),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 4),
-          )
-        ],
+        border: Border.all(color: const Color(0xFF6FAF6B)),
       ),
       child: Row(
         children: [
-          // ===== ICON JAM =====
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF7DA453), width: 2),
-            ),
-            child: const Icon(
-              Icons.access_time,
-              color: Color(0xFF7DA453),
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // ===== TEKS KIRI =====
+          const Icon(Icons.check_circle,
+              color: Color(0xFF6FAF6B)),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  name,
-                  style: const TextStyle(color: Colors.black54),
-                ),
+                Text(title,
+                    style:
+                        const TextStyle(fontWeight: FontWeight.bold)),
+                Text(name, style: const TextStyle(fontSize: 12)),
               ],
             ),
           ),
-
-          // ===== TEKS KANAN =====
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                total,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                date,
-                style: const TextStyle(color: Colors.black54),
-              ),
-            ],
-          ),
+          const Text(
+            '26/01/2026',
+            style: TextStyle(fontSize: 11),
+          )
         ],
       ),
     );
