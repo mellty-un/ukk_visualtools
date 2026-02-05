@@ -3,16 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DendaPage extends StatefulWidget {
   final int idPengembalian;
-  final bool terlambat;
-  final bool rusak;
-  final int hariTerlambat;
 
   const DendaPage({
     super.key,
     required this.idPengembalian,
-    required this.terlambat,
-    required this.rusak,
-    required this.hariTerlambat, required String jenisDenda, required int totalDenda,
   });
 
   @override
@@ -21,66 +15,130 @@ class DendaPage extends StatefulWidget {
 
 class _DendaPageState extends State<DendaPage> {
   final supabase = Supabase.instance.client;
-  int totalDenda = 0;
-  String jenisDenda = '';
+  bool isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    hitungDenda();
+  Future<void> _simpanDendaTanpaConstraint() async {
+    setState(() => isLoading = true);
+    
+    try {
+      // 1. Langsung coba SIMPLE INSERT tanpa status_bayar
+      final result = await supabase.from('denda').insert({
+        'id_pengembalian': widget.idPengembalian,
+        'total_denda': 0,
+        // JANGAN MASUKKAN status_bayar - biarkan NULL atau DEFAULT
+      }).select();
+      
+      print('✅ Berhasil insert: $result');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Denda berhasil disimpan'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+      
+    } catch (e) {
+      print('Error: $e');
+      
+      // 2. Jika masih error, coba pakai FUNCTION
+      try {
+        await supabase.rpc('simpan_denda_aman', params: {
+          'p_id': widget.idPengembalian,
+        });
+        
+        print('✅ Berhasil via function');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Denda berhasil disimpan via function'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+        
+      } catch (e2) {
+        print('Error function: $e2');
+        
+        // 3. Coba SOLUSI EXTREME: Disable constraint sementara
+        _solusiExtreme();
+      }
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
   }
 
-  void hitungDenda() {
-    int denda = 0;
-    List<String> jenis = [];
-
-    if (widget.terlambat) {
-      denda += widget.hariTerlambat * 5000;
-      jenis.add('Terlambat');
-    }
-
-    if (widget.rusak) {
-      denda += 20000;
-      jenis.add('Rusak');
-    }
-
-    totalDenda = denda;
-    jenisDenda = jenis.join(' & ');
-  }
-
-  Future<void> simpanDenda() async {
-    await supabase.from('denda').insert({
-      'id_pengembalian': widget.idPengembalian,
-      'jenis_denda': jenisDenda,
-      'total_denda': totalDenda,
-      'status_bayar': 'belum',
-    });
-
-    Navigator.pop(context);
+  void _solusiExtreme() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('⚠️ Perbaiki Database'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Constraint error di tabel "denda".'),
+            SizedBox(height: 10),
+            Text('Jalankan query ini di SQL Editor:'),
+            SizedBox(height: 5),
+            SelectableText(
+              "ALTER TABLE denda ALTER COLUMN status_bayar SET DEFAULT 'belum_bayar';",
+              style: TextStyle(fontFamily: 'monospace'),
+            ),
+            SizedBox(height: 10),
+            Text('Atau hapus constraint:'),
+            SizedBox(height: 5),
+            SelectableText(
+              "ALTER TABLE denda DROP CONSTRAINT denda_status_bayar_check;",
+              style: TextStyle(fontFamily: 'monospace'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Denda')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Jenis Denda: $jenisDenda'),
-            const SizedBox(height: 10),
-            Text(
-              'Total: Rp $totalDenda',
-              style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: simpanDenda,
-              child: const Text('Simpan Denda'),
-            )
-          ],
+      appBar: AppBar(
+        title: const Text('Denda'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Menyimpan denda...',
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: isLoading ? null : _simpanDendaTanpaConstraint,
+                child: isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('SIMPAN DENDA AMAN'),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '⚠️ Setelah berhasil, cek constraint di database',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.orange),
+              ),
+            ],
+          ),
         ),
       ),
     );

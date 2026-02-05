@@ -182,8 +182,14 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.black),
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
       ),
-      drawer: _buildDrawer(context), // pakai drawer sama seperti Dashboard
+      drawer: _buildDrawer(context),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -475,18 +481,14 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
                         case 'Kategori':
                           Navigator.pushNamed(context, '/kategori');
                           break;
-                        case 'Peminjam':
-                        case 'Peminjaman':
-                          Navigator.pushNamed(context, '/peminjaman');
-                          break;
                         case 'Denda':
-                          Navigator.pushNamed(context, '/denda');
+                          Navigator.pushNamed(context, '/riwayat'); // ke riwayat denda
                           break;
                         case 'Riwayat':
                           Navigator.pushNamed(context, '/riwayat');
                           break;
                         case 'Aktivitas':
-                          // sudah di halaman ini, cukup tutup drawer
+                          // Tidak perlu navigasi, sudah di halaman ini
                           break;
                         case 'Keluar':
                           Navigator.pushReplacementNamed(context, '/login');
